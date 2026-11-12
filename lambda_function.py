@@ -1,3 +1,4 @@
+import json
 import requests
 
 #Logging initialization
@@ -13,10 +14,10 @@ def listening_statement(artist_str, track_str):
 
 def gather_current_listening_data(headers):
     session = requests.session()
-    default_payload = {'statusCode': 200, 'headers': {'Access-Control-Allow-Origin' : "*", 'content-type': 'application/json'},"isBase64Encoded": "false"}
+    payload = {'statusCode': 200, 'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'}, 'isBase64Encoded': False}
 
     # Try currently playing
-    current_playing_response = session.get('https://api.spotify.com/v1/me/player/currently-playing', headers = headers)
+    current_playing_response = session.get('https://api.spotify.com/v1/me/player/currently-playing', headers=headers)
     
     if current_playing_response.status_code != 204:
         response_data = current_playing_response.json()
@@ -26,18 +27,14 @@ def gather_current_listening_data(headers):
 
         eventual_body = {'statement': listening_statement(artists_names, track_name)}
 
-        default_payload['body'] = eventual_body
-
-        logger.info(f"{default_payload}")
-        return default_payload
-    
+        body = eventual_body
     else:
-        default_payload['body'] = {'statement':'Ryan is not listening to anything on Spotify right now.'}
+        body = {'statement': 'Ryan is not listening to anything on Spotify right now.'}
         logger.info('Not listening right now')
-        return default_payload
+
+    # The API Gateway integration extracts the workflow output's body.
+    payload['body'] = json.dumps(body)
+    return payload
 
 def lambda_handler(event, context):
-    
     return gather_current_listening_data(event['body'])
-    
-    
