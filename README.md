@@ -20,3 +20,11 @@ Lambda code.
 ## Tests
 
 Run `python3 -m unittest -v`.
+
+## Deployment
+
+GitHub Actions tests and builds the Lambda package on pull requests. A push to
+`main` also deploys the package to `what-is-ryan-listening-to` in `us-west-2`.
+The deploy job uses a GitHub OIDC role scoped to this repository's main branch
+and this Lambda; it does not use long-lived AWS credentials. Revert a change on
+`main` to deploy the reverted code.
